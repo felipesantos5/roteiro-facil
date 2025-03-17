@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import Cors from "cors";
 import axios from "axios";
-import { differenceInDays, format, parse, isValid } from "date-fns";
+import { differenceInDays, format, parse, isValid, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 // Configuração do CORS para permitir requisições de domínios específicos
@@ -58,171 +58,114 @@ function parseDate(dateString: string): Date {
 
 // Função principal para gerar o roteiro de viagem
 export async function generateItinerary(tripData: TripData): Promise<string> {
-  // try {
-  //   // Analisa as datas de início e término da viagem
-  //   const startDate = parseDate(tripData.startDate);
-  //   const endDate = parseDate(tripData.endDate);
+  try {
+    // Analisa as datas de início e término da viagem
+    const startDate = parseDate(tripData.startDate);
+    const endDate = parseDate(tripData.endDate);
 
-  //   // Calcula a duração da viagem em dias
-  //   const tripDuration = differenceInDays(endDate, startDate) + 1;
+    // Calcula a duração da viagem em dias
+    const tripDuration = differenceInDays(endDate, startDate) + 1;
 
-  //   // Função para construir o prompt dinâmico para a Deepseek API
-  //   const buildDynamicPrompt = (tripData: TripData): string => {
-  //     return `Você é um especialista em planejamento de viagens com conhecimento detalhado sobre ${tripData.destination}. Crie um roteiro de viagem personalizado considerando:
+    const buildDynamicPrompt = (tripData: TripData): string => {
+      return `Você é um especialista em planejamento de viagens com conhecimento detalhado sobre ${tripData.destination}. Crie um roteiro de viagem personalizado seguindo RIGOROSAMENTE este formato:
+    
+    ### Roteiro de Viagem para ${tripData.destination} (${format(tripData.startDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} a ${format(tripData.endDate, "dd 'de' MMMM 'de' yyyy", {
+        locale: ptBR,
+      })})
+    
+    ---
+    
+    ${Array.from(
+      { length: tripDuration },
+      (_, i) => `
+    #### Dia ${i + 1} (${format(addDays(tripData.startDate, i), "dd 'de' MMMM", { locale: ptBR })}):
+    
+    **🕐 Manhã:**
+    🎌 [NOME DA ATIVIDADE - Ex: Visita ao Museu Nacional]
+    ✏️ [DESCRIÇÃO BREVE - MAX 2 LINHAS. Ex: Explore a história e a arte local. Destaque as principais exposições.]
+    📍 [ENDEREÇO COMPLETO - Ex: Rua XV de Novembro, 123, Centro]
+    💰 [CUSTO ESTIMADO - Ex: R$ 20 por pessoa]
+    🌤️ [DICA DE CLIMA/VESTUÁRIO - 1 LINHA. Ex: Use roupas leves e confortáveis.]
+    
+    **🕐 Tarde:**
+    🎌 [NOME DA ATIVIDADE - Ex: Passeio de Barco pela Baía]
+    ✏️ [DESCRIÇÃO BREVE - MAX 2 LINHAS. Ex: Desfrute de vistas panorâmicas da cidade. Observe a vida marinha local.]
+    📍 [ENDEREÇO COMPLETO - Ex: Cais dos Pescadores, s/n, Beira Mar]
+    💰 [CUSTO ESTIMADO - Ex: R$ 50 por pessoa]
+    🌤️ [DICA DE CLIMA/VESTUÁRIO - 1 LINHA. Ex: Leve um casaco, pois pode ventar.]
+    
+    **🕐 Noite:**
+    🎌 [NOME DA ATIVIDADE - Ex: Jantar em Restaurante Típico]
+    ✏️ [DESCRIÇÃO BREVE - MAX 2 LINHAS. Ex: Saboreie pratos tradicionais da região. Experimente a culinária local.]
+    📍 [ENDEREÇO COMPLETO - Ex: Rua da Praia, 456, Centro Histórico]
+    💰 [CUSTO ESTIMADO - Ex: R$ 80 por pessoa]
+    🌤️ [DICA DE CLIMA/VESTUÁRIO - 1 LINHA. Ex: Vista-se casualmente elegante.]
+    
+    ---`
+    ).join("\n")}
+    
+    Considere as seguintes informações ao criar o roteiro:
+    - Interesses principais: ${tripData.interests.join(", ")} (Ex: história, natureza, gastronomia)
+    - Faixa de orçamento: ${tripData.budget} (Ex: Econômico, Moderado, Luxo)
+    
+    Instruções importantes:
+    1. Siga RIGOROSAMENTE o formato fornecido acima, incluindo os emojis e a estrutura de cada seção (Manhã, Tarde, Noite).
+    2. Mantenha as descrições CONCISAS, com no máximo 2 linhas, focando nos pontos mais importantes da atividade.
+    3. Inclua APENAS as informações solicitadas dentro dos colchetes []. Não adicione detalhes extras ou informações que não foram pedidas.
+    4. NÃO adicione nenhum texto ou explicação adicional no início ou no final do roteiro. Comece diretamente com "### Roteiro de Viagem" e termine após o último dia.
+    5. Priorize experiências autênticas e locais, evitando pontos turísticos excessivamente populares.
+    6. Equilibre atividades físicas (caminhadas, esportes) e culturais (museus, teatros), oferecendo variedade ao viajante.
+    7. Inclua opções para diferentes condições meteorológicas (atividades ao ar livre e em locais fechados), para que o roteiro seja flexível.
+    8. Varie os tipos de atividades ao longo dos dias (ex: não coloque dois museus seguidos).
+    9. Otimize o tempo de deslocamento entre as atividades, agrupando locais próximos sempre que possível.
+    
+    Exemplo de como preencher cada campo:
+    - **🎌 NOME DA ATIVIDADE:** Coloque o nome da atração ou atividade.
+    - **✏️ DESCRIÇÃO BREVE:** Descreva a atividade em poucas palavras, destacando o que a torna especial.
+    - **📍 ENDEREÇO COMPLETO:** Inclua o endereço completo para facilitar a localização.
+    - **💰 CUSTO ESTIMADO:** Indique o custo aproximado da atividade por pessoa.
+    - **🌤️ DICA DE CLIMA/VESTUÁRIO:** Sugira roupas ou acessórios adequados para o clima previsto.
+    
+    Este prompt foi projetado para gerar uma saída que corresponda EXATAMENTE ao formato desejado, garantindo a consistência e a qualidade do roteiro.`;
+    };
 
-  //   1. Contexto do viajante:
-  //   - Destino: ${tripData.destination}
-  //   - Data de início: ${format(startDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-  //   - Data de término: ${format(endDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-  //   - Duração da viagem: ${tripDuration} dias
-  //   - Interesses principais: ${tripData.interests.join(", ")} (Ex: museus, gastronomia, natureza)
-  //   - Faixa de orçamento: ${tripData.budget} (Ex: econômico, moderado, luxuoso)
+    // Define as mensagens a serem enviadas para a Deepseek API
+    const messages = [
+      {
+        role: "system",
+        content: "Você é um assistente especializado em criação de roteiros de viagem detalhados e personalizados. Forneça informações precisas e relevantes.",
+      },
+      {
+        role: "user",
+        content: buildDynamicPrompt(tripData),
+      },
+    ];
 
-  //   2. Requisitos do Roteiro:
-  //   Para cada dia, forneça um plano detalhado incluindo:
-  //   → Período do dia (Manhã/Tarde/Noite)
-  //   → Nome do local/atividade
-  //   → Descrição detalhada (50-70 palavras) destacando elementos únicos, aspectos culturais e como se relaciona aos interesses do viajante
-  //   → Localização exata (Endereço)
-  //   → Custo médio da atividade ou local (em moeda local)
-  //   → Considerações climáticas e dicas relevantes para a época do ano (Ex: roupas adequadas, eventos sazonais)
+    // Envia a requisição para a Deepseek API
+    const response = await axios.post(
+      `${DEEPSEEK_API_URL}/chat/completions`,
+      {
+        model: "deepseek-chat",
+        messages,
+        temperature: 0.7, // Ajusta a aleatoriedade da resposta (0.0 a 1.0)
+        max_tokens: 1500, // Limita o tamanho da resposta
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-  //   3. Restrições:
-  //   - Evitar turismo massificado, priorizando experiências autênticas
-  //   - Balancear atividades físicas e culturais para atender a diferentes preferências
-  //   - Incluir opções para diferentes condições meteorológicas (Ex: atividades indoor em dias chuvosos)
+    console.log("Response from Deepseek API:", response.data.choices[0]?.message?.content);
 
-  //   Formato exigido para cada dia:
-
-  //   Dia X (${format(startDate, "dd 'de' MMMM", { locale: ptBR })}):
-  //   🕐 Manhã/Tarde/Noite:
-  //   🎌 [Nome da Atividade/Local]
-  //   ✏️ [Descrição detalhada]
-  //   📍 [Localização exata]
-  //   💰 [Custo médio]
-  //   🌤️ [Considerações climáticas e dicas]`;
-  //   };
-
-  //   // Define as mensagens a serem enviadas para a Deepseek API
-  //   const messages = [
-  //     {
-  //       role: "system",
-  //       content: "Você é um assistente especializado em criação de roteiros de viagem detalhados e personalizados. Forneça informações precisas e relevantes.",
-  //     },
-  //     {
-  //       role: "user",
-  //       content: buildDynamicPrompt(tripData),
-  //     },
-  //   ];
-
-  //   // Envia a requisição para a Deepseek API
-  //   const response = await axios.post(
-  //     `${DEEPSEEK_API_URL}/chat/completions`,
-  //     {
-  //       model: "deepseek-chat",
-  //       messages,
-  //       temperature: 0.7, // Ajusta a aleatoriedade da resposta (0.0 a 1.0)
-  //       max_tokens: 1500, // Limita o tamanho da resposta
-  //     },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
-  //         "Content-Type": "application/json",
-  //       },
-  //     }
-  //   );
-
-  //   console.log("Response from Deepseek API:", response.data);
-
-  //   // Retorna o conteúdo da resposta ou uma string vazia em caso de falha
-  //   return response.data.choices[0]?.message?.content || "";
-  // } catch (error) {
-  //   console.error("Erro na geração do roteiro:", error);
-  //   throw new Error("Falha ao gerar roteiro");
-  // }
-
-  return `"### Roteiro de Viagem para Florianópolis, SC (16 a 18 de março de 2025)
-
----
-
-#### Dia 1 (16 de março):  
-**🕐 Manhã:** 
-🎌 Mercado Público de Florianópolis 
-✏️ Explore o coração histórico e cultural da cidade. O mercado oferece uma variedade de produtos locais, como artesanato, frutos do mar frescos e comidas típicas. Experimente a sequência de camarão, prato tradicional da região.  
-📍 R. Jerônimo Coelho, 60 - Centro, Florianópolis - SC  
-💰 R$ 50-100 (refeição + compras)  
-🌤️ Março é quente e úmido. Use roupas leves e calçados confortáveis. Leve um guarda-chuva, pois chuvas rápidas são comuns.  
-
-**🕐 Tarde:**  
-🎌 Fortaleza de São José da Ponta Grossa  
-✏️ Visite esta fortaleza do século XVIII, parte do sistema de defesa da ilha. A estrutura histórica e a vista panorâmica do mar são imperdíveis. Ótimo para fotos e para aprender sobre a história colonial do Brasil.  
-📍 Rod. SC-401, km 12 - Praia do Forte, Florianópolis - SC  
-💰 R$ 10 (entrada)  
-🌤️ Use protetor solar e chapéu, pois a área é aberta e ensolarada.  
-
-**🕐 Noite:**  
-🎌 Restaurante Ostradamus  
-✏️ Desfrute de uma experiência gastronômica autêntica com frutos do mar frescos. O restaurante é conhecido por sua atmosfera acolhedora e pratos como ostras e moquecas.  
-📍 R. Laurindo Januário da Silveira, 463 - Lagoa da Conceição, Florianópolis - SC  
-💰 R$ 100-150 por pessoa  
-🌤️ Noite agradável, leve um casaco leve para o vento da lagoa.  
-
----
-
-#### Dia 2 (17 de março):  
-**🕐 Manhã:**  
-🎌 Trilha da Lagoinha do Leste  
-✏️ Uma das trilhas mais bonitas da ilha, com paisagens deslumbrantes de mata atlântica e uma praia isolada. Ideal para quem gosta de natureza e atividades físicas moderadas.  
-📍 Acesso pela Praia do Matadeiro ou Costa de Dentro - Florianópolis - SC  
-💰 Gratuito  
-🌤️ Use tênis de trilha, leve água e lanches leves. Março é quente, então comece cedo para evitar o calor intenso.  
-
-**🕐 Tarde:**  
-🎌 Museu Histórico de Santa Catarina (Palácio Cruz e Sousa)
-✏️ Conheça a história do estado em um palácio do século XIX, com exposições sobre cultura, política e arte. A arquitetura neoclássica é impressionante.  
-📍 Praça XV de Novembro, 227 - Centro, Florianópolis - SC  
-💰 R$ 10 (entrada)  
-🌤️ Atividade indoor, ideal para o período mais quente do dia.  
-
-**🕐 Noite:**  
-**🎌 Feirinha da Lagoa da Conceição**  
-✏️ Uma feira ao ar livre com artesanato local, comidas típicas e apresentações culturais. Ótima oportunidade para comprar lembranças e interagir com os moradores.  
-📍 Av. Afonso Delambert Neto, 709 - Lagoa da Conceição, Florianópolis - SC  
-💰 R$ 30-50 (compras e lanches)  
-🌤️ Noite agradável, leve um casaco leve.  
-
----
-
-#### Dia 3 (18 de março):  
-**🕐 Manhã:**  
-**🎌 Praia Mole**  
-✏️ Uma das praias mais famosas de Florianópolis, conhecida por suas ondas fortes e paisagem deslumbrante. Ideal para relaxar ou praticar surf.  
-📍 Rod. Jornalista Maurício Sirotsky Sobrinho, s/n - Lagoa da Conceição, Florianópolis - SC  
-💰 Gratuito  
-🌤️ Use protetor solar e leve uma canga ou toalha.  
-
-**🕐 Tarde:**  
-**🎌 Projeto Tamar Florianópolis**  
-✏️ Conheça o trabalho de conservação das tartarugas marinhas. O centro tem exposições interativas e tanques com espécies locais.  
-📍 R. Prof. Ademir Francisco, 140 - Barra da Lagoa, Florianópolis - SC  
-💰 R$ 24 (entrada)  
-🌤️ Atividade indoor, ideal para o período mais quente do dia.  
-
-**🕐 Noite:**  
-**🎌 Bar do Arante**  
-✏️ Um bar tradicional na Praia do Arante, conhecido por sua atmosfera descontraída e pratos como o pastel de camarão. Ótimo para encerrar a viagem com um jantar à beira-mar.  
-📍 R. Abelardo Otacílio Gomes, 228 - Praia do Arante, Florianópolis - SC  
-💰 R$ 80-120 por pessoa  
-🌤️ Noite agradável, leve um casaco leve para o vento da praia.  
-
----
-
-### Considerações Finais:  
-- **Clima em março:** Quente e úmido, com possibilidade de chuvas rápidas. Leve roupas leves, protetor solar e um guarda-chuva.  
-- **Transporte:** Alugue um carro para facilitar o deslocamento entre as praias e pontos turísticos.  
-- **Orçamento:** Moderado, com gastos médios de R$ 300-400 por dia, incluindo alimentação, transporte e ingressos.  
-
-Boa viagem! 🌴"`;
+    // Retorna o conteúdo da resposta ou uma string vazia em caso de falha
+    return response.data.choices[0]?.message?.content || "";
+  } catch (error) {
+    console.error("Erro na geração do roteiro:", error);
+    throw new Error("Falha ao gerar roteiro");
+  }
 }
 
 // Handler principal da API Next.js
