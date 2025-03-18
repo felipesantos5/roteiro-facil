@@ -32,7 +32,7 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) 
 
 // URL da Deepseek API e chave de API (obtida das variáveis de ambiente)
 const DEEPSEEK_API_URL = "https://api.deepseek.com";
-const DEEPSEEK_API_KEY = "sk-afddf6c7aae94ae69550235e7612c36a";
+const DEEPSEEK_API_KEY = "sk-862c16a3bc004e5a847ba5eceb5ca722";
 
 interface TripData {
   destination: string;

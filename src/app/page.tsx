@@ -7,13 +7,16 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function HomePage() {
+
+  console.log('teste', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="relative w-full h-[500px] flex items-center justify-center">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/placeholder.svg?height=500&width=1200"
+            src=""
             alt="Travel destinations"
             fill
             className="object-cover brightness-50"
