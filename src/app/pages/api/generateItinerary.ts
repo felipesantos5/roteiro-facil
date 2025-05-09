@@ -110,14 +110,14 @@ export async function generateItinerary(tripData: TripData): Promise<string> {
     
     Instruções importantes:
     1. Siga RIGOROSAMENTE o formato fornecido acima, incluindo os emojis e a estrutura de cada seção (Manhã, Tarde, Noite).
-    2. Mantenha as descrições CONCISAS, com no máximo 2 linhas, focando nos pontos mais importantes da atividade.
+    2. Mantenha as descrições CONCISAS, com no máximo 3 linhas, focando nos pontos mais importantes da atividade.
     3. Inclua APENAS as informações solicitadas dentro dos colchetes []. Não adicione detalhes extras ou informações que não foram pedidas.
     4. NÃO adicione nenhum texto ou explicação adicional no início ou no final do roteiro. Comece diretamente com "### Roteiro de Viagem" e termine após o último dia.
     5. Priorize experiências autênticas e locais, evitando pontos turísticos excessivamente populares.
     6. Equilibre atividades físicas (caminhadas, esportes) e culturais (museus, teatros), oferecendo variedade ao viajante.
     7. Inclua opções para diferentes condições meteorológicas (atividades ao ar livre e em locais fechados), para que o roteiro seja flexível.
     8. Varie os tipos de atividades ao longo dos dias (ex: não coloque dois museus seguidos).
-    9. Otimize o tempo de deslocamento entre as atividades, agrupando locais próximos sempre que possível.
+    9. Seja bem conciso nas localizações não faço um roteiro com lugares extremamente longes, priorize esplorar bem uma região por dia.
     
     Exemplo de como preencher cada campo:
     - **🎌 NOME DA ATIVIDADE:** Coloque o nome da atração ou atividade.

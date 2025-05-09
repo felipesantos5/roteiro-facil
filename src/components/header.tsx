@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Button } from "./ui/button"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
+import logo from "../assets/logo-roteirofacil.png"
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -23,10 +24,10 @@ export const Header = () => {
       {/* Header */}
       <header className="bg-white py-4 px-6 shadow-sm sticky top-8 z-40">
         <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center">
+          <a className="flex items-center" href="/">
             <div className="mr-2">
               <Image
-                src="/placeholder.svg?height=40&width=40"
+                src={logo}
                 alt="Roteiro Fácil Logo"
                 width={40}
                 height={40}
@@ -34,7 +35,7 @@ export const Header = () => {
               />
             </div>
             <h1 className="text-2xl font-bold text-green-600">Roteiro Fácil</h1>
-          </div>
+          </a>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">

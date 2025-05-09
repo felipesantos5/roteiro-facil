@@ -21,6 +21,7 @@ import { generateItinerary } from "@/app/pages/api/generateItinerary"
 import { format, parseISO, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import GeneratingPage from "@/components/loadingItinerary"
+import ShareModal from "@/components/ShareModal"
 
 interface Activity {
   id: string;
@@ -53,6 +54,15 @@ function ItineraryContent({ id }: { id: string }) {
   const [itinerary, setItinerary] = useState<Itinerary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const handleShareClick = () => {
+    setIsShareModalOpen(true);
+  };
+
+  const baseURL = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+  const shareUrl = `${baseURL}/itinerary/${id}`; // Ajuste conforme necessário
+  const shareTitle = `Confira meu itinerário de viagem para ${itinerary?.destination}!`;
 
   useEffect(() => {
     const fetchItinerary = async () => {
@@ -182,7 +192,7 @@ function ItineraryContent({ id }: { id: string }) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleShareClick}>
             <Share2 className="h-4 w-4 mr-2" />
             Compartilhar
           </Button>
@@ -197,6 +207,13 @@ function ItineraryContent({ id }: { id: string }) {
             </Link>
           </Button>
         </div>
+
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          url={shareUrl}
+          title={shareTitle}
+        />
       </div>
 
 

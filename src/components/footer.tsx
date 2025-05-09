@@ -2,6 +2,7 @@ import { Facebook, Instagram, Mail, Phone } from "lucide-react"
 import { Button } from "./ui/button"
 import Link from "next/link"
 import Image from "next/image"
+import logo from "../assets/logo-roteirofacil.png"
 
 export const Footer = () => {
   return (
@@ -13,7 +14,7 @@ export const Footer = () => {
             <div className="flex items-center mb-4">
               <div className="mr-2">
                 <Image
-                  src="/placeholder.svg?height=40&width=40"
+                  src={logo}
                   alt="Roteiro Fácil Logo"
                   width={40}
                   height={40}
@@ -102,7 +103,7 @@ export const Footer = () => {
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-2 text-gray-400" />
-                <span className="text-gray-400">+55 (11) 9999-9999</span>
+                <span className="text-gray-400">+55 (49) 99131-9311</span>
               </li>
             </ul>
           </div>

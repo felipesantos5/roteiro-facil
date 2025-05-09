@@ -17,6 +17,7 @@ import { MultiSelect } from "@/components/multiSelect"
 import { useRouter } from 'next/navigation'
 import Autosuggest from 'react-autosuggest'
 import debounce from 'lodash/debounce'
+import { v4 } from "uuid"
 
 interface Suggestion {
   name: string;
@@ -109,7 +110,7 @@ export default function CreateItineraryPage() {
 
     try {
       localStorage.setItem('tripData', JSON.stringify(tripData))
-      router.push('/itinerary/paris-trip')
+      router.push(`/itinerary/${v4()}`)
     } catch (error) {
       console.error("Erro ao salvar dados no localStorage:", error)
       alert("Ocorreu um erro ao salvar os dados. Por favor, tente novamente.")
@@ -177,7 +178,7 @@ export default function CreateItineraryPage() {
             {/* Intervalo de Datas */}
             <div className="space-y-2">
               <Label>Datas da Viagem</Label>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col gap-4">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button

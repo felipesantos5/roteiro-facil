@@ -330,7 +330,7 @@ export default function LandingPage() {
                   <Star className="fill-current h-5 w-5" />
                   <Star className="fill-current h-5 w-5" />
                   <Star className="fill-current h-5 w-5" />
-                  <Star className="h-5 w-5" />
+                  <Star className="fill-current h-5 w-5" />
                 </div>
               </CardHeader>
               <CardContent>
