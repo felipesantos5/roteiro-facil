@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, Model } from "mongoose";
+import { v4 as uuidv4 } from "uuid"; // Import uuid
 
 // Interface para Atividade (opcional, mas bom para tipagem)
 export interface IActivity extends Document {
@@ -21,44 +22,52 @@ export interface IDay extends Document {
 
 // Interface para Itinerário
 export interface IItinerary extends Document {
-  userId?: string; // Opcional, dependendo da sua lógica de autenticação
+  id: string; // <-- ADD THIS LINE
+  userId?: string;
   slug: string;
   title: string;
   destination: string;
-  startDate: string; // Recomendo armazenar como ISO string ou Date
-  endDate: string; // Recomendo armazenar como ISO string ou Date
-  dates: string; // String formatada (ex: "01/01/2024 - 05/01/2024")
-  duration: string; // String (ex: "5 dias")
+  startDate: string;
+  endDate: string;
+  dates: string;
+  duration: string;
   budget: string;
   interests: string[];
-  totalCost?: string; // Pode ser o mesmo que budget ou calculado
+  totalCost?: string;
   days: IDay[];
   rawContent?: string;
   createdAt: Date;
 }
 
 const ActivitySchema = new Schema<IActivity>({
-  id: { type: String, required: true },
+  id: { type: String, required: true, default: () => uuidv4() }, // Added default for robustness
   period: { type: String, required: true },
   title: { type: String, required: true },
   description: { type: String },
   location: { type: String },
   cost: { type: String },
   weather: { type: String },
-  icon: { type: String, required: true },
+  icon: { type: String, required: false }, // Made icon optional if Default is handled in frontend
 });
 
 const DaySchema = new Schema<IDay>({
   day: { type: Number, required: true },
-  date: { type: String, required: true }, // Ex: "01 de Janeiro"
+  date: { type: String, required: true },
   activities: [ActivitySchema],
 });
 
 const ItinerarySchema = new Schema<IItinerary>({
+  id: {
+    // <-- ADD THIS ENTIRE BLOCK
+    type: String,
+    required: true,
+    unique: true,
+    default: () => uuidv4(), // Ensures ID is always generated if not provided
+    index: true,
+  },
   userId: {
     type: String,
     index: true,
-    // required: false, // Defina como true se for obrigatório
   },
   slug: {
     type: String,
@@ -68,11 +77,11 @@ const ItinerarySchema = new Schema<IItinerary>({
   },
   title: { type: String, required: true },
   destination: { type: String, required: true },
-  startDate: { type: String, required: true }, // Ou Date
-  endDate: { type: String, required: true }, // Ou Date
+  startDate: { type: String, required: true },
+  endDate: { type: String, required: true },
   dates: { type: String, required: true },
   duration: { type: String, required: true },
-  budget: { type: String, required: true },
+  budget: { type: String },
   interests: [{ type: String }],
   totalCost: { type: String },
   days: [DaySchema],
@@ -83,7 +92,6 @@ const ItinerarySchema = new Schema<IItinerary>({
   },
 });
 
-// Evita erro de sobreposição de modelo com HMR (Hot Module Replacement)
 const ItineraryModel: Model<IItinerary> = mongoose.models.Itinerary || mongoose.model<IItinerary>("Itinerary", ItinerarySchema);
 
 export default ItineraryModel;

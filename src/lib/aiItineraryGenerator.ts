@@ -45,69 +45,67 @@ export async function generateItineraryWithAI(tripData: TripData): Promise<strin
       // throw new Error("A duração da viagem é muito longa para gerar um roteiro detalhado (máx. 30 dias).");
     }
 
-    const buildDynamicPrompt = (data: TripData, sDate: Date, eDate: Date, duration: number): string => {
-      const formattedStartDate = format(sDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
-      const formattedEndDate = format(addDays(sDate, duration - 1), "dd 'de' MMMM 'de' yyyy", { locale: ptBR }); // Ajustar data final se tripDuration foi limitada
-
-      return `Você é um especialista em planejamento de viagens com conhecimento detalhado sobre ${
-        data.destination
-      }. Crie um roteiro de viagem personalizado seguindo RIGOROSAMENTE este formato Markdown:
-
-### Roteiro de Viagem para ${data.destination} (${formattedStartDate} a ${formattedEndDate})
-
----
-
-${Array.from(
-  { length: duration },
-  (_, i) => `
-#### Dia ${i + 1} (${format(addDays(sDate, i), "dd 'de' MMMM", { locale: ptBR })}):
-
-**🕐 Manhã:**
-🎌 [NOME DA ATIVIDADE DA MANHÃ]
-✏️ [DESCRIÇÃO BREVE DA ATIVIDADE DA MANHÃ - MAX 3 LINHAS]
-📍 [ENDEREÇO COMPLETO OU ÁREA DA ATIVIDADE DA MANHÃ]
-💰 [CUSTO ESTIMADO POR PESSOA PARA A ATIVIDADE DA MANHÃ]
-🌤️ [DICA DE CLIMA/VESTUÁRIO PARA A MANHÃ - 1 LINHA]
-
-**🕐 Tarde:**
-🎌 [NOME DA ATIVIDADE DA TARDE]
-✏️ [DESCRIÇÃO BREVE DA ATIVIDADE DA TARDE - MAX 3 LINHAS]
-📍 [ENDEREÇO COMPLETO OU ÁREA DA ATIVIDADE DA TARDE]
-💰 [CUSTO ESTIMADO POR PESSOA PARA A ATIVIDADE DA TARDE]
-🌤️ [DICA DE CLIMA/VESTUÁRIO PARA A TARDE - 1 LINHA]
-
-**🕐 Noite:**
-🎌 [NOME DA ATIVIDADE DA NOITE]
-✏️ [DESCRIÇÃO BREVE DA ATIVIDADE DA NOITE - MAX 3 LINHAS]
-📍 [ENDEREÇO COMPLETO OU ÁREA DA ATIVIDADE DA NOITE]
-💰 [CUSTO ESTIMADO POR PESSOA PARA A ATIVIDADE DA NOITE]
-🌤️ [DICA DE CLIMA/VESTUÁRIO PARA A NOITE - 1 LINHA]
-
----`
-).join("\n")}
-
-Considere as seguintes informações ao criar o roteiro:
-- Interesses principais: ${data.interests.join(", ")}
-- Faixa de orçamento: ${data.budget}
-
-Instruções importantes:
-1.  Siga RIGOROSAMENTE o formato Markdown fornecido, incluindo os emojis 🕐🎌✏️📍💰🌤️ e a estrutura de cada seção.
-2.  As descrições (✏️) devem ser concisas, com no máximo 3 linhas.
-3.  Inclua APENAS as informações solicitadas dentro dos colchetes []. Não adicione detalhes extras, explicações, notas de rodapé ou texto introdutório/conclusivo fora do formato especificado.
-4.  Comece diretamente com "### Roteiro de Viagem" e termine após o último dia.
-5.  Priorize experiências autênticas e locais.
-6.  Equilibre atividades (ex: não coloque dois museus seguidos no mesmo período).
-7.  Sugira atividades variadas e adequadas aos interesses e orçamento fornecidos.
-8.  Para o campo 📍 ENDEREÇO COMPLETO, forneça o endereço da atração ou, se não aplicável (ex: "Caminhada pela orla"), o nome da área geral.
-9.  Para o campo 💰 CUSTO ESTIMADO, use "Gratuito", "Baixo (até R$50)", "Médio (R$51-R$150)", "Alto (acima de R$150)" ou um valor específico (ex: "R$ 75 por pessoa").
-10. Para o campo 🌤️ DICA DE CLIMA/VESTUÁRIO, seja breve e prático.
-11. Se não houver uma atividade específica para um período (Manhã, Tarde ou Noite), deixe os campos em branco, mas mantenha a estrutura do período. Exemplo:
+    const buildDynamicPrompt = (tripData: TripData): string => {
+      return `Você é um especialista em planejamento de viagens com conhecimento detalhado sobre ${tripData.destination}. Crie um roteiro de viagem personalizado seguindo RIGOROSAMENTE este formato:
+    
+    ### Roteiro de Viagem para ${tripData.destination} (${format(tripData.startDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} a ${format(tripData.endDate, "dd 'de' MMMM 'de' yyyy", {
+        locale: ptBR,
+      })})
+    
+    ---
+    
+    ${Array.from(
+      { length: tripDuration },
+      (_, i) => `
+    #### Dia ${i + 1} (${format(addDays(tripData.startDate, i), "dd 'de' MMMM", { locale: ptBR })}):
+    
     **🕐 Manhã:**
-    🎌 []
-    ✏️ []
-    📍 []
-    💰 []
-    🌤️ []`;
+    🎌 [NOME DA ATIVIDADE - Ex: Visita ao Museu Nacional]
+    ✏️ [DESCRIÇÃO BREVE - MAX 2 LINHAS. Ex: Explore a história e a arte local. Destaque as principais exposições.]
+    📍 [ENDEREÇO COMPLETO - Ex: Rua XV de Novembro, 123, Centro]
+    💰 [CUSTO ESTIMADO - Ex: R$ 20 por pessoa]
+    🌤️ [DICA DE CLIMA/VESTUÁRIO - 1 LINHA. Ex: Use roupas leves e confortáveis.]
+    
+    **🕐 Tarde:**
+    🎌 [NOME DA ATIVIDADE - Ex: Passeio de Barco pela Baía]
+    ✏️ [DESCRIÇÃO BREVE - MAX 2 LINHAS. Ex: Desfrute de vistas panorâmicas da cidade. Observe a vida marinha local.]
+    📍 [ENDEREÇO COMPLETO - Ex: Cais dos Pescadores, s/n, Beira Mar]
+    💰 [CUSTO ESTIMADO - Ex: R$ 50 por pessoa]
+    🌤️ [DICA DE CLIMA/VESTUÁRIO - 1 LINHA. Ex: Leve um casaco, pois pode ventar.]
+    
+    **🕐 Noite:**
+    🎌 [NOME DA ATIVIDADE - Ex: Jantar em Restaurante Típico]
+    ✏️ [DESCRIÇÃO BREVE - MAX 2 LINHAS. Ex: Saboreie pratos tradicionais da região. Experimente a culinária local.]
+    📍 [ENDEREÇO COMPLETO - Ex: Rua da Praia, 456, Centro Histórico]
+    💰 [CUSTO ESTIMADO - Ex: R$ 80 por pessoa]
+    🌤️ [DICA DE CLIMA/VESTUÁRIO - 1 LINHA. Ex: Vista-se casualmente elegante.]
+    
+    ---`
+    ).join("\n")}
+    
+    Considere as seguintes informações ao criar o roteiro:
+    - Interesses principais: ${tripData.interests.join(", ")} (Ex: história, natureza, gastronomia)
+    - Faixa de orçamento: ${tripData.budget} (Ex: Econômico, Moderado, Luxo)
+    
+    Instruções importantes:
+    1. Siga RIGOROSAMENTE o formato fornecido acima, incluindo os emojis e a estrutura de cada seção (Manhã, Tarde, Noite).
+    2. Mantenha as descrições CONCISAS, com no máximo 2 linhas, focando nos pontos mais importantes da atividade.
+    3. Inclua APENAS as informações solicitadas dentro dos colchetes []. Não adicione detalhes extras ou informações que não foram pedidas.
+    4. NÃO adicione nenhum texto ou explicação adicional no início ou no final do roteiro. Comece diretamente com "### Roteiro de Viagem" e termine após o último dia.
+    5. Priorize experiências autênticas e locais, evitando pontos turísticos excessivamente populares.
+    6. Equilibre atividades físicas (caminhadas, esportes) e culturais (museus, teatros), oferecendo variedade ao viajante.
+    7. Inclua opções para diferentes condições meteorológicas (atividades ao ar livre e em locais fechados), para que o roteiro seja flexível.
+    8. Varie os tipos de atividades ao longo dos dias (ex: não coloque dois museus seguidos).
+    9. Otimize o tempo de deslocamento entre as atividades, agrupando locais próximos sempre que possível.
+    
+    Exemplo de como preencher cada campo:
+    - **🎌 NOME DA ATIVIDADE:** Coloque o nome da atração ou atividade.
+    - **✏️ DESCRIÇÃO BREVE:** Descreva a atividade em poucas palavras, destacando o que a torna especial.
+    - **📍 ENDEREÇO COMPLETO:** Inclua o endereço completo para facilitar a localização.
+    - **💰 CUSTO ESTIMADO:** Indique o custo aproximado da atividade por pessoa.
+    - **🌤️ DICA DE CLIMA/VESTUÁRIO:** Sugira roupas ou acessórios adequados para o clima previsto.
+    
+    Este prompt foi projetado para gerar uma saída que corresponda EXATAMENTE ao formato desejado, garantindo a consistência e a qualidade do roteiro.`;
     };
 
     const messages = [
@@ -118,7 +116,7 @@ Instruções importantes:
       },
       {
         role: "user",
-        content: buildDynamicPrompt(tripData, startDate, endDate, tripDuration),
+        content: buildDynamicPrompt(tripData),
       },
     ];
 
